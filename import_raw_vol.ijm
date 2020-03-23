@@ -35,7 +35,9 @@ macro "import_raw_vol [v]" {
 	  vgifile=File.openAsString(pathfile+".vgi");
 	  rows=split(vgifile, "\n");
 
-	  for(i=0; i<rows.length; i++){
+		r = 0;
+		u = 0;
+		for(i=0; i<rows.length; i++){
 	    columns=split(rows[i],"=");
 
 	    if (indexOf(columns[0], "size", 0)==0){
@@ -61,10 +63,25 @@ macro "import_raw_vol [v]" {
 	      		datatype = "Unsigned";
 	        }
 	    }
+
+			if ((indexOf(columns[0], "resolution", 0)==0)&(r==0)){
+		    resolution = split(columns[1]," ");
+		    voxelWidth=resolution[0];
+		    voxelHeight=resolution[1];
+		    voxelDepth=resolution[2];
+		    r++;
+	    }
+
+	    if ((indexOf(columns[0], "unit", 0)==0)&(u==0)){
+		    unit = split(columns[1]," ");
+		    voxelUnit = unit[0];
+		    u++;
+	   }
 	  }
 
 	  filename = pathfile +".vol";
 	  run("Raw...", "open='" + filename +"' image=[" + bitsize + "-bit " + datatype + "] width="+sizeW + " height="+sizeH + " number="+sizeZ +" little-endian use");
+		run("Properties...", "channels=1 slices="+sizeZ+" frames=1 unit="+voxelUnit+" pixel_width="+voxelWidth+" pixel_height="+voxelHeight+" voxel_depth="+voxelDepth);
 	}
 
 	if(extension=="raw"){
